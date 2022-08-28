@@ -18,18 +18,8 @@
 
 // https://github.com/mfcc64/showcqt-element
 
-// BEGIN import
-async function alt_import(...urls) {
-    for (const url of urls) {
-        try {
-            return await import(url);
-        } catch { }
-    }
-    throw new Error(`Unable to load modules: ${urls}`);
-}
-
-const { ShowCQT } = await alt_import("showcqt", "https://cdn.jsdelivr.net/npm/showcqt@1.1.2/showcqt.mjs");
-// END import
+// FIXME
+import ShowCQT from "https://cdn.jsdelivr.net/npm/showcqt@1.1.2/showcqt.mjs";
 
 const DEFAULT_AXIS_SRC      = `${new URL("axis-1920x32.png", import.meta.url)}`;
 const DEFAULT_WATERFALL     = 33,   MIN_WATERFALL   = 0,    MAX_WATERFALL   = 100;
