@@ -12,6 +12,12 @@
   },
   "author": "Muhammad Faiz",
   "license": "LGPL-3.0-or-later",
+  "dependencies": {
+    "showcqt": "1.1.2"
+  },
+  "scripts": {
+    "postinstall": "node fix-import.js"
+  },
   "bugs": {
     "url": "https://github.com/mfcc64/showcqt-element/issues"
   },
