@@ -16,7 +16,7 @@ import "showcqt-element";
 ```js
 // import the latest version
 import "https://cdn.jsdelivr.net/npm/showcqt-element/showcqt-element.mjs";
-// import a specific version
+// import a specific version, the recommended way, improve cacheability
 import "https://cdn.jsdelivr.net/npm/showcqt-element@1.0.0/showcqt-element.mjs";
 ```
 - A simple example:
@@ -25,6 +25,7 @@ import "https://cdn.jsdelivr.net/npm/showcqt-element@1.0.0/showcqt-element.mjs";
 <html>
     <head>
         <title>ShowCQTElement</title>
+        <!-- of course, the recommended way is to import a specific version -->
         <script type="module" src="https://cdn.jsdelivr.net/npm/showcqt-element/showcqt-element.mjs"></script>
     </head>
     <body>
