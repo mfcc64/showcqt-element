@@ -5,6 +5,14 @@ A [showcqt](https://github.com/mfcc64/showcqt-js) audio visualization as an HTML
 - [Youtube Musical Spectrum](https://github.com/mfcc64/youtube-musical-spectrum) - a browser extension that uses showcqt-element.
 
 ## Usage
+- NPM
+```
+npm i showcqt-element
+```
+```js
+import "showcqt-element";
+```
+- CDN
 ```js
 // import the latest version
 import "https://cdn.jsdelivr.net/npm/showcqt-element/showcqt-element.mjs";
@@ -122,8 +130,4 @@ showcqt.input_elements;
 customElements.get("showcqt-element").global_audio_context = new AudioContext();
 // now showcqt will use global_audio_context instead of internal audio_context
 const showcqt = document.createElement("showcqt-element");
-```
-- NPM
-```
-npm i showcqt-element
 ```
