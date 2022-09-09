@@ -29,6 +29,7 @@ import "https://cdn.jsdelivr.net/npm/showcqt-element@1.0.0/showcqt-element.mjs";
         <script type="module" src="https://cdn.jsdelivr.net/npm/showcqt-element/showcqt-element.mjs"></script>
     </head>
     <body>
+        <!-- don't do this, you should call URL.revokeObjectURL() -->
         <p><input id="audio-input" type="file" accept="audio/*,video/*"
             onchange="document.getElementById('audio-player').src = window.URL.createObjectURL(this.files[0]);"/><br/>
         <audio id="audio-player" controls=""></audio></p>
