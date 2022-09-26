@@ -387,9 +387,7 @@ class ShowCQTElement extends HTMLElement {
         this.#analyser[0].getFloatTimeDomainData(this.#cqt.inputs[0]);
         this.#analyser[1].getFloatTimeDomainData(this.#cqt.inputs[1]);
 
-        let is_silent = true;
-        for (let k = 0; k < this.#cqt.fft_size && is_silent; k++)
-            is_silent = (this.#cqt.inputs[0][k] **2 + this.#cqt.inputs[1][k] **2 < 1e-14);
+        const is_silent = this.#cqt.detect_silence(1e-14);
 
         if (is_silent && this.#sono_dirty_h <= 0)
             return;
