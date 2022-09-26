@@ -66,31 +66,31 @@ class ShowCQTElement extends HTMLElement {
                     position: absolute; left: 0; bottom: 0;
                 }
 
-                [data-id=container] {
+                #container {
                     position: relative;
                     min-height: 32px; min-width: 256px;
                     width: 100%; height: 100%;
                 }
 
-                [data-id=blocker] {
+                #blocker {
                     pointer-events: auto;
                 }
 
-                [data-id=canvas] {
+                #canvas {
                     width: auto; height: auto;
                 }
             </style>
-            <div data-id="container">
-                <div data-id="blocker"></div>
-                <canvas data-id="canvas" width="0" height="0"></canvas>
-                <img data-id="axis"/>
+            <div id="container">
+                <div id="blocker"></div>
+                <canvas id="canvas" width="0" height="0"></canvas>
+                <img id="axis"/>
             </div>`;
 
         (async () => { this.#cqt = await ShowCQT.instantiate(); })();
-        this.#container = shadow.querySelector("[data-id=container]");
-        this.#blocker   = shadow.querySelector("[data-id=blocker]");
-        this.#canvas    = shadow.querySelector("[data-id=canvas]");
-        this.#axis      = shadow.querySelector("[data-id=axis]");
+        this.#container = shadow.getElementById("container");
+        this.#blocker   = shadow.getElementById("blocker");
+        this.#canvas    = shadow.getElementById("canvas");
+        this.#axis      = shadow.getElementById("axis");
         this.#canvas_ctx = this.#canvas.getContext("2d");
 
 
