@@ -19,7 +19,7 @@
 // https://github.com/mfcc64/showcqt-element
 
 // FIXME
-import ShowCQT from "https://cdn.jsdelivr.net/npm/showcqt@1.1.2/showcqt.mjs";
+import ShowCQT from "https://cdn.jsdelivr.net/npm/showcqt@1.2.0/showcqt.mjs";
 
 const DEFAULT_AXIS_SRC      = `${new URL("axis-1920x32.png", import.meta.url)}`;
 const DEFAULT_WATERFALL     = 33,   MIN_WATERFALL   = 0,    MAX_WATERFALL   = 100;
