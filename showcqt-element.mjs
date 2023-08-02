@@ -72,7 +72,7 @@ class ShowCQTElement extends HTMLElement {
                     width: 100%; height: 100%;
                 }
 
-                #blocker {
+                #axis, #blocker {
                     pointer-events: auto;
                 }
 
