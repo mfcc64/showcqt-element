@@ -17,7 +17,7 @@ import "showcqt-element";
 // import the latest version
 import "https://cdn.jsdelivr.net/npm/showcqt-element/showcqt-element.mjs";
 // import a specific version, the recommended way, improve cacheability
-import "https://cdn.jsdelivr.net/npm/showcqt-element@1.0.0/showcqt-element.mjs";
+import "https://cdn.jsdelivr.net/npm/showcqt-element@1.0.2/showcqt-element.mjs";
 ```
 - A simple example:
 ```html

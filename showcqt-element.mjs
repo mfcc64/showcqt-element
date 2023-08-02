@@ -45,7 +45,7 @@ const OBSERVED_ATTRIBUTES = [
 // Hopefully nobody hijacks HTMLDivElement
 const HTMLElement = Object.getPrototypeOf(HTMLDivElement);
 class ShowCQTElement extends HTMLElement {
-    static version = "1.0.1";
+    static version = "1.0.2";
 
     static global_audio_context;
 
