@@ -130,8 +130,10 @@ class ShowCQTElement extends HTMLElement {
             return this.#update_attribute(name, val);
     }
 
+    #showcqt_element_input_source = Symbol("showcqt_element_input_source");
+
     #update_input_elements(val) {
-        const src = "__showcqt_element_input_source";
+        const src = this.#showcqt_element_input_source;
         val = val ? val : "";
         const new_elems = [];
         try {
