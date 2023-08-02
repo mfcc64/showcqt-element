@@ -27,15 +27,22 @@ import "https://cdn.jsdelivr.net/npm/showcqt-element@1.0.0/showcqt-element.mjs";
         <title>ShowCQTElement</title>
         <!-- of course, the recommended way is to import a specific version -->
         <script type="module" src="https://cdn.jsdelivr.net/npm/showcqt-element/showcqt-element.mjs"></script>
+        <script type="module">
+            document.getElementById("audio-input").onchange = function() {
+                const player = document.getElementById("audio-player");
+                const old = player.src;
+                player.src = URL.createObjectURL(this.files[0]);
+                URL.revokeObjectURL(old);
+            };
+        </script>
     </head>
     <body>
-        <!-- don't do this, you should call URL.revokeObjectURL() -->
-        <p><input id="audio-input" type="file" accept="audio/*,video/*"
-            onchange="document.getElementById('audio-player').src = window.URL.createObjectURL(this.files[0]);"/><br/>
+        <p><input id="audio-input" type="file" accept="audio/*,video/*"/><br/>
         <audio id="audio-player" controls=""></audio></p>
         <showcqt-element id="showcqt" data-inputs="#audio-player"></showcqt-element>
     </body>
 </html>
+
 ```
 - We can set style:
 ```css
