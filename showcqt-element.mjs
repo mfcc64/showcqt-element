@@ -438,8 +438,8 @@ class ShowCQTElement extends HTMLElement {
             for (let y = 1; y < this.#speed && line_start + y < this.#height; y++) {
                 this.#ring_buffer_read(Math.round(this.#ring_read - y * delta / this.#speed) & this.#ring_mask);
                 this.#cqt.calc();
-                this.#cqt.render_line_opaque(1000000);
                 this.actual_render_callback?.(this.#cqt.color);
+                this.#cqt.render_line_opaque(this.#bar_h);
                 data.set(this.#cqt.output, 4 * this.#width * (line_start + y));
             }
         }
