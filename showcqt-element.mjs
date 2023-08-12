@@ -300,8 +300,7 @@ class ShowCQTElement extends HTMLElement {
         if (this.#render_count)
             return;
 
-        if (this.render_callback)
-            this.render_callback();
+        this.render_callback?.();
 
         const width = this.#container.clientWidth;
         const height = this.#container.clientHeight;
@@ -418,8 +417,7 @@ class ShowCQTElement extends HTMLElement {
         this.#cqt.set_height(this.#bar_h);
         this.#cqt.set_volume(this.#bar, this.#brightness);
         this.#cqt.calc();
-        if (this.actual_render_callback)
-            this.actual_render_callback(this.#cqt.color);
+        this.actual_render_callback?.(this.#cqt.color);
 
         const data = this.#canvas_buffer.data;
 
