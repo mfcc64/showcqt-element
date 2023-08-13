@@ -24,20 +24,4 @@ class SendFrameProcessor extends AudioWorkletProcessor {
     }
 }
 
-class SendFrameDebugProcessor extends AudioWorkletProcessor {
-    #size = 3 * 128;
-    #buffer = [new Float32Array(this.#size), new Float32Array(this.#size)];
-    #index = 0;
-
-    process(inputs) {
-        this.#buffer[0].set(inputs[0][0], this.#index);
-        this.#buffer[1].set(inputs[0][1], this.#index);
-        this.#index = (this.#index + inputs[0][0].length) % this.#size;
-        if (!this.#index)
-            this.port.postMessage(this.#buffer);
-        return true;
-    }
-}
-
 registerProcessor("send-frame", SendFrameProcessor);
-registerProcessor("send-frame-debug", SendFrameDebugProcessor);
