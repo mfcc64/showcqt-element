@@ -367,11 +367,9 @@ class ShowCQTElement extends HTMLElement {
     #create_alpha_table() {
         if (this.#height > 0) {
             this.#alpha_table = new Uint8Array(this.#height);
-            for (let y = 0; y < this.#bar_h; y++)
-                this.#alpha_table[y] = (this.#opacity == "opaque") ? 255 :
-                    Math.round(255 * Math.pow(Math.sin(0.5 * Math.PI * y / this.#bar_h), 2));
-            for (let y = this.#bar_h; y < this.#height; y++)
-                this.#alpha_table[y] = 255;
+            for (let y = 0; y < this.#height; y++)
+                this.#alpha_table[y] = (this.#opacity == "opaque" || y >= this.#bar_h) ? 255 :
+                    Math.round(255 * Math.sin(0.5 * Math.PI * y / this.#bar_h)**2);
         }
     }
 
