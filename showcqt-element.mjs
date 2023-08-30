@@ -199,7 +199,7 @@ class ShowCQTElement extends HTMLElement {
                 this.#opacity = (val == "transparent" || val == "opaque") ? val : DEFAULT_OPACITY;
                 this.#canvas.style.pointerEvents = (this.#opacity == "opaque") ? "auto" : "none";
                 this.#create_alpha_table();
-                this.#clear_canvas();
+                this.#clear_bar();
                 break;
             default:
                 throw new Error("unreached");
@@ -371,6 +371,17 @@ class ShowCQTElement extends HTMLElement {
                 this.#alpha_table[y] = (this.#opacity == "opaque" || y >= this.#bar_h) ? 255 :
                     Math.round(255 * Math.sin(0.5 * Math.PI * y / this.#bar_h)**2);
         }
+    };
+
+    #clear_bar = () => {
+        if (!this.#canvas_buffer)
+            return;
+
+        for (let y = 0, data = this.#canvas_buffer.data, addr = 3; y < this.#bar_h; y++)
+            for (let x = 0, alpha = this.#alpha_table[y]; x < this.#width; x++, addr += 4)
+                data[addr] = alpha;
+
+        this.#canvas_is_dirty = true;
     };
 
     #clear_canvas = () => {
