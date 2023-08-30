@@ -377,17 +377,9 @@ class ShowCQTElement extends HTMLElement {
         if (!this.#canvas_buffer)
             return;
 
-        const data = this.#canvas_buffer.data;
-        for (let y = 0; y < this.#height; y++) {
-            const alpha = this.#alpha_table[y];
-            const line = 4 * y * this.#width;
-            for (let x = 0; x < 4 * this.#width; x += 4) {
-                data[line + x] = 0;
-                data[line + x + 1] = 0;
-                data[line + x + 2] = 0;
-                data[line + x + 3] = alpha;
-            }
-        }
+        const data = new Uint32Array(this.#canvas_buffer.data.buffer, this.#canvas_buffer.data.byteOffset, this.#width * this.#height);
+        for (let y = 0; y < this.#height; y++)
+            data.fill(this.#alpha_table[y] << 24, y * this.#width, (y + 1) * this.#width);
 
         this.#sono_dirty_h = 0;
         this.#canvas_is_dirty = true;
