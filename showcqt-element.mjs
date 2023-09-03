@@ -55,6 +55,7 @@ class ShowCQTElement extends HTMLElement {
 
     constructor() {
         super();
+        const p = Object.seal(this.#private);
         const shadow = this.attachShadow({mode: "open"});
         shadow.innerHTML =
             `<style>
@@ -86,38 +87,35 @@ class ShowCQTElement extends HTMLElement {
                 <img id="axis"/>
             </div>`;
 
-        (async () => { this.#cqt = await ShowCQT.instantiate(); })();
-        this.#container = shadow.getElementById("container");
-        this.#blocker   = shadow.getElementById("blocker");
-        this.#canvas    = shadow.getElementById("canvas");
-        this.#axis      = shadow.getElementById("axis");
-        this.#canvas_ctx = this.#canvas.getContext("2d");
+        (async () => { p.cqt = await ShowCQT.instantiate(); })();
+        for (const id of ["container", "blocker", "canvas", "axis"])
+            p[id] = shadow.getElementById(id);
+        p.canvas_ctx = p.canvas.getContext("2d");
 
-
-        this.#audio_ctx = ShowCQTElement.global_audio_context;
-        if (!this.#audio_ctx) {
-            this.#audio_ctx = new AudioContext();
+        p.audio_ctx = ShowCQTElement.global_audio_context;
+        if (!p.audio_ctx) {
+            p.audio_ctx = new AudioContext();
             // FIXME
             var resume_audio = () => {
-                if (this.#audio_ctx.state === "suspended") {
-                    this.#audio_ctx.resume();
+                if (p.audio_ctx.state === "suspended") {
+                    p.audio_ctx.resume();
                     setTimeout(resume_audio, 100);
                 }
             }
             resume_audio();
         }
 
-        this.#iir = this.#audio_ctx.createBiquadFilter();
-        this.#iir.type = "peaking";
-        this.#iir.frequency.value = 10;
-        this.#iir.Q.value = 0.33;
-        this.#panner = this.#audio_ctx.createStereoPanner();
-        this.#panner.connect(this.#iir);
+        p.iir = p.audio_ctx.createBiquadFilter();
+        p.iir.type = "peaking";
+        p.iir.frequency.value = 10;
+        p.iir.Q.value = 0.33;
+        p.panner = p.audio_ctx.createStereoPanner();
+        p.panner.connect(p.iir);
         (async () => {
-            await this.#audio_ctx.audioWorklet.addModule(new URL("audio-worklet.mjs", import.meta.url));
-            const worklet = new AudioWorkletNode(this.#audio_ctx, "send-frame");
-            this.#iir.connect(worklet);
-            worklet.port.onmessage = (msg) => this.#ring_buffer ? this.#ring_buffer_write(msg.data) : 0;
+            await p.audio_ctx.audioWorklet.addModule(new URL("audio-worklet.mjs", import.meta.url));
+            const worklet = new AudioWorkletNode(p.audio_ctx, "send-frame");
+            p.iir.connect(worklet);
+            worklet.port.onmessage = (msg) => p.ring_buffer ? this.#ring_buffer_write(msg.data) : 0;
         })().catch(e => console.error(e));
 
         for (const attr of OBSERVED_ATTRIBUTES)
@@ -131,77 +129,77 @@ class ShowCQTElement extends HTMLElement {
             return this.#update_attribute(name, val);
     }
 
-    #showcqt_element_input_source = Symbol("showcqt_element_input_source");
-
     #update_input_elements = (val) => {
-        const src = this.#showcqt_element_input_source;
+        const p = this.#private;
+        const src = p.showcqt_element_input_source;
         val = val ? val : "";
         const new_elems = [];
         try {
             for (const elem of document.querySelectorAll(val)) {
                 try {
-                    const k = this.#i_elems.indexOf(elem);
+                    const k = p.i_elems.indexOf(elem);
                     if (k >= 0) {
-                        this.#i_elems[k] = null;
+                        p.i_elems[k] = null;
                         new_elems.push(elem);
                         continue;
                     }
 
                     if (elem[src]) {
-                        if (elem[src].context == this.#audio_ctx) {
+                        if (elem[src].context == p.audio_ctx) {
                             elem[src].connect(this.audio_input);
-                            elem[src].connect(this.#audio_ctx.destination);
+                            elem[src].connect(p.audio_ctx.destination);
                             new_elems.push(elem);
                         }
                     } else {
-                        elem[src] = this.#audio_ctx.createMediaElementSource(elem);
+                        elem[src] = p.audio_ctx.createMediaElementSource(elem);
                         elem[src].connect(this.audio_input);
-                        elem[src].connect(this.#audio_ctx.destination);
+                        elem[src].connect(p.audio_ctx.destination);
                         new_elems.push(elem);
                     }
                 } catch { }
             }
         } catch { }
 
-        for (const elem of this.#i_elems)
+        for (const elem of p.i_elems)
             if (elem)
                 elem[src].disconnect();
 
-        this.#i_elems = new_elems;
+        p.i_elems = new_elems;
     };
 
     #update_attribute = (name, val) => {
+        const p = this.#private;
         val = val ? val : undefined;
         switch (name) {
             case "data-axis":
-                this.#axis.src = val ? val : DEFAULT_AXIS_SRC;
+                p.axis.src = val ? val : DEFAULT_AXIS_SRC;
                 break;
             case "data-waterfall":
                 val = Math.max(MIN_WATERFALL, Math.min(MAX_WATERFALL, isNaN(val*1) ? DEFAULT_WATERFALL : val*1));
-                this.#layout_changed = (this.#waterfall !== val);
-                this.#waterfall = val;
+                p.layout_changed = (p.waterfall !== val);
+                p.waterfall = val;
                 break;
             case "data-brightness":
-                this.#brightness = Math.max(MIN_BRIGHTNESS, Math.min(MAX_BRIGHTNESS, isNaN(val*1) ? DEFAULT_BRIGHTNESS : val*1));
+                p.brightness = Math.max(MIN_BRIGHTNESS, Math.min(MAX_BRIGHTNESS, isNaN(val*1) ? DEFAULT_BRIGHTNESS : val*1));
                 break;
             case "data-bar":
-                this.#bar = Math.max(MIN_BAR, Math.min(MAX_BAR, isNaN(val*1) ? DEFAULT_BAR : val*1));
+                p.bar = Math.max(MIN_BAR, Math.min(MAX_BAR, isNaN(val*1) ? DEFAULT_BAR : val*1));
                 break;
             case "data-bass":
-                this.#iir.gain.value = Math.max(MIN_BASS, Math.min(MAX_BASS, isNaN(val*1) ? DEFAULT_BASS : val*1));
+                p.iir.gain.value = Math.max(MIN_BASS, Math.min(MAX_BASS, isNaN(val*1) ? DEFAULT_BASS : val*1));
                 break;
             case "data-interval":
-                this.#interval = Math.max(MIN_INTERVAL, Math.min(MAX_INTERVAL, isNaN(val*1) ? DEFAULT_INTERVAL : Math.round(val*1)));
+                p.interval = Math.max(MIN_INTERVAL, Math.min(MAX_INTERVAL, isNaN(val*1) ? DEFAULT_INTERVAL : Math.round(val*1)));
                 break;
             case "data-speed":
-                this.#speed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, isNaN(val*1) ? DEFAULT_SPEED : Math.round(val*1)));
+                p.speed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, isNaN(val*1) ? DEFAULT_SPEED : Math.round(val*1)));
                 break;
             case "data-opacity":
                 val = (val == "transparent" || val == "opaque") ? val : DEFAULT_OPACITY;
-                if (this.#opacity === val)
+                if (p.opacity === val)
                     break;
-                this.#opacity = val;
-                this.#canvas.style.pointerEvents = (this.#opacity == "opaque") ? "auto" : "none";
+                p.opacity = val;
+                p.canvas.style.pointerEvents = (p.opacity == "opaque") ? "auto" : "none";
                 this.#create_alpha_table();
                 this.#clear_bar();
                 break;
@@ -211,11 +209,12 @@ class ShowCQTElement extends HTMLElement {
     };
 
     connectedCallback() {
+        const p = this.#private;
         if (this.isConnected) {
-            !this.#is_active_render ? requestAnimationFrame(this.#render) : 0;
-            this.#is_active_render = true;
+            !p.is_active_render ? requestAnimationFrame(this.#render) : 0;
+            p.is_active_render = true;
         } else {
-            this.#is_active_render = false;
+            p.is_active_render = false;
         }
     }
 
@@ -224,187 +223,150 @@ class ShowCQTElement extends HTMLElement {
     }
 
     get audio_context() {
-        return this.#audio_ctx;
+        return this.#private.audio_ctx;
     }
 
     get audio_input() {
-        return this.#panner;
+        return this.#private.panner;
     }
 
     get input_elements() {
-        return this.#i_elems;
+        return this.#private.i_elems;
     }
 
     render_pause() {
-        this.#is_paused = true;
+        this.#private.is_paused = true;
     }
 
     render_play() {
-        this.#is_paused = false;
+        this.#private.is_paused = false;
     }
 
     get render_is_paused() {
-        return this.#is_paused;
+        return this.#private.is_paused;
     }
 
     render_clear() {
         this.#clear_canvas();
     }
 
-    // layout
-    #width;
-    #height;
-    #waterfall;
-    #axis_h;
-    #sono_h;
-    #bar_h;
-    #opacity;
-    #speed;
-    #layout_changed;
-    #brightness;
-    #bar;
-    #interval;
-
-    // elements
-    #container;
-    #blocker;
-    #canvas;
-    #axis;
-    #canvas_ctx;
-    #canvas_buffer;
-
-    // input elements
-    #i_elems = [];
-
-    // context
-    #cqt;
-    #audio_ctx;
-    #iir;
-    #panner;
-
-    // render state
-    #alpha_table;
-    #is_active_render = false;
-    #render_count = 0;
-    #canvas_is_dirty = false;
-    #is_paused = false;
-    #sono_dirty_h = 0;
-
-    #last_time = NaN;
-
     #render = (time) => {
-        if (this.#is_active_render)
+        const p = this.#private;
+        if (p.is_active_render)
             requestAnimationFrame(this.#render);
 
-        if (!this.#cqt)
+        if (!p.cqt)
             return;
 
-        this.#render_count++;
-        this.#render_count = this.#render_count < this.#interval ? this.#render_count : 0;
-        if (this.#render_count)
+        p.render_count++;
+        p.render_count = p.render_count < p.interval ? p.render_count : 0;
+        if (p.render_count)
             return;
 
         this.render_callback?.();
 
-        const width = this.#container.clientWidth;
-        const height = this.#container.clientHeight;
+        const width = p.container.clientWidth;
+        const height = p.container.clientHeight;
 
         if (width <= 0 || height <= 0)
             return;
 
-        if (width !== this.#width || height !== this.#height || this.#layout_changed) {
+        if (width !== p.width || height !== p.height || p.layout_changed) {
             let old_waterfall = null;
-            if (width !== this.#width) {
-                this.#cqt.init(this.#audio_ctx.sampleRate, width, height, 4, 4, 4, true);
-                if (!this.#ring_buffer) {
-                    this.#ring_size = 4 * this.#cqt.fft_size;
-                    this.#ring_buffer = [
-                        new Float32Array(this.#ring_size),
-                        new Float32Array(this.#ring_size)
+            if (width !== p.width) {
+                p.cqt.init(p.audio_ctx.sampleRate, width, height, 4, 4, 4, true);
+                if (!p.ring_buffer) {
+                    p.ring_size = 4 * p.cqt.fft_size;
+                    p.ring_buffer = [
+                        new Float32Array(p.ring_size),
+                        new Float32Array(p.ring_size)
                     ];
-                    this.#ring_read = 0;
-                    this.#ring_write = this.#cqt.fft_size;
-                    this.#ring_mask = this.#ring_size - 1;
+                    p.ring_read = 0;
+                    p.ring_write = p.cqt.fft_size;
+                    p.ring_mask = p.ring_size - 1;
                 }
             } else {
-                old_waterfall = this.#canvas_buffer.data.subarray(4 * this.#width * this.#bar_h);
+                old_waterfall = p.canvas_buffer.data.subarray(4 * p.width * p.bar_h);
             }
 
-            this.#layout_changed = false;
-            this.#width = width;
-            this.#height = height;
+            p.layout_changed = false;
+            p.width = width;
+            p.height = height;
 
-            this.#sono_h = Math.round(this.#waterfall * height / 100);
-            this.#axis_h = Math.round(width * 32 / 1920);
-            this.#bar_h = height - this.#axis_h - this.#sono_h;
+            p.sono_h = Math.round(p.waterfall * height / 100);
+            p.axis_h = Math.round(width * 32 / 1920);
+            p.bar_h = height - p.axis_h - p.sono_h;
 
-            if (this.#bar_h < 1) {
-                this.#sono_h += this.#bar_h -1;
-                this.#bar_h = 1;
+            if (p.bar_h < 1) {
+                p.sono_h += p.bar_h -1;
+                p.bar_h = 1;
             }
 
-            if (this.#sono_h < 0) {
-                this.#axis_h += this.#sono_h;
-                this.#sono_h = 0;
+            if (p.sono_h < 0) {
+                p.axis_h += p.sono_h;
+                p.sono_h = 0;
             }
 
-            this.#axis.style.bottom = this.#sono_h + "px";
-            this.#axis.style.width = width + "px";
-            this.#axis.style.height = this.#axis_h + "px";
-            this.#canvas.width = width;
-            this.#canvas.height = height;
-            this.#blocker.style.width = width + "px";
-            this.#blocker.style.height = this.#sono_h + this.#axis_h + Math.round(0.1 * this.#bar_h) + "px";
-            this.#canvas_buffer = this.#canvas_ctx.createImageData(width, height);
+            p.axis.style.bottom = p.sono_h + "px";
+            p.axis.style.width = width + "px";
+            p.axis.style.height = p.axis_h + "px";
+            p.canvas.width = width;
+            p.canvas.height = height;
+            p.blocker.style.width = width + "px";
+            p.blocker.style.height = p.sono_h + p.axis_h + Math.round(0.1 * p.bar_h) + "px";
+            p.canvas_buffer = p.canvas_ctx.createImageData(width, height);
             this.#create_alpha_table();
             this.#clear_canvas();
             if (old_waterfall)
-                this.#canvas_buffer.data.set(old_waterfall.subarray(0,
-                                             Math.min(old_waterfall.length, 4 * this.#width * (this.#axis_h + this.#sono_h))),
-                                             4 * this.#width * this.#bar_h);
+                p.canvas_buffer.data.set(old_waterfall.subarray(0,
+                                         Math.min(old_waterfall.length, 4 * p.width * (p.axis_h + p.sono_h))),
+                                         4 * p.width * p.bar_h);
         }
 
-        if (!this.#is_paused) {
-            this.#cqt_render(time - this.#last_time);
-            this.#last_time = time;
+        if (!p.is_paused) {
+            this.#cqt_render(time - p.last_time);
+            p.last_time = time;
         }
 
-        if (this.#canvas_is_dirty)
-            this.#canvas_ctx.putImageData(this.#canvas_buffer, 0, 0);
+        if (p.canvas_is_dirty)
+            p.canvas_ctx.putImageData(p.canvas_buffer, 0, 0);
 
-        this.#canvas_is_dirty = false;
+        p.canvas_is_dirty = false;
     };
 
     #create_alpha_table = () => {
-        if (this.#height > 0) {
-            this.#alpha_table = new Uint8Array(this.#height);
-            for (let y = 0; y < this.#height; y++)
-                this.#alpha_table[y] = (this.#opacity == "opaque" || y >= this.#bar_h) ? 255 :
-                    Math.round(255 * Math.sin(0.5 * Math.PI * y / this.#bar_h)**2);
+        const p = this.#private;
+        if (p.height > 0) {
+            p.alpha_table = new Uint8Array(p.height);
+            for (let y = 0; y < p.height; y++)
+                p.alpha_table[y] = (p.opacity == "opaque" || y >= p.bar_h) ? 255 :
+                    Math.round(255 * Math.sin(0.5 * Math.PI * y / p.bar_h)**2);
         }
     };
 
     #clear_bar = () => {
-        if (!this.#canvas_buffer)
+        const p = this.#private;
+        if (!p.canvas_buffer)
             return;
 
-        for (let y = 0, data = this.#canvas_buffer.data, addr = 3; y < this.#bar_h; y++)
-            for (let x = 0, alpha = this.#alpha_table[y]; x < this.#width; x++, addr += 4)
+        for (let y = 0, data = p.canvas_buffer.data, addr = 3; y < p.bar_h; y++)
+            for (let x = 0, alpha = p.alpha_table[y]; x < p.width; x++, addr += 4)
                 data[addr] = alpha;
 
-        this.#canvas_is_dirty = true;
+        p.canvas_is_dirty = true;
     };
 
     #clear_canvas = () => {
-        if (!this.#canvas_buffer)
+        const p = this.#private;
+        if (!p.canvas_buffer)
             return;
 
-        const data = new Uint32Array(this.#canvas_buffer.data.buffer, this.#canvas_buffer.data.byteOffset, this.#width * this.#height);
-        for (let y = 0; y < this.#height; y++)
-            data.fill(this.#alpha_table[y] << 24, y * this.#width, (y + 1) * this.#width);
+        const data = new Uint32Array(p.canvas_buffer.data.buffer, p.canvas_buffer.data.byteOffset, p.width * p.height);
+        for (let y = 0; y < p.height; y++)
+            data.fill(p.alpha_table[y] << 24, y * p.width, (y + 1) * p.width);
 
-        this.#sono_dirty_h = 0;
-        this.#canvas_is_dirty = true;
+        p.sono_dirty_h = 0;
+        p.canvas_is_dirty = true;
     };
 
     #calc_delta = (buffer_delta, ideal_delta) => {
@@ -414,60 +376,55 @@ class ShowCQTElement extends HTMLElement {
     };
 
     #cqt_render = (delta_time) => {
-        const buffer_delta = (this.#ring_write - this.#cqt.fft_size - this.#ring_read) & this.#ring_mask;
-        const ideal_delta = delta_time !== delta_time ? buffer_delta : delta_time * this.#audio_ctx.sampleRate / 1000;
+        const p = this.#private;
+        const buffer_delta = (p.ring_write - p.cqt.fft_size - p.ring_read) & p.ring_mask;
+        const ideal_delta = delta_time !== delta_time ? buffer_delta : delta_time * p.audio_ctx.sampleRate / 1000;
         const delta = this.#calc_delta(buffer_delta, ideal_delta);
 
-        this.#ring_read = (this.#ring_read + delta) & this.#ring_mask;
-        this.#ring_buffer_read(this.#ring_read);
+        p.ring_read = (p.ring_read + delta) & p.ring_mask;
+        this.#ring_buffer_read(p.ring_read);
 
-        const is_silent = this.#cqt.detect_silence(1e-14);
+        const is_silent = p.cqt.detect_silence(1e-14);
 
-        if (is_silent && this.#sono_dirty_h <= 0)
+        if (is_silent && p.sono_dirty_h <= 0)
             return;
 
-        this.#cqt.set_height(this.#bar_h);
-        this.#cqt.set_volume(this.#bar, this.#brightness);
-        this.#cqt.calc();
-        this.actual_render_callback?.(this.#cqt.color);
+        p.cqt.set_height(p.bar_h);
+        p.cqt.set_volume(p.bar, p.brightness);
+        p.cqt.calc();
+        this.actual_render_callback?.(p.cqt.color);
 
-        const data = this.#canvas_buffer.data;
+        const data = p.canvas_buffer.data;
 
-        for (let y = 0; y < this.#bar_h + this.#axis_h; y++) {
-            if (y <= this.#bar_h)
-                this.#cqt.render_line_alpha(y, this.#alpha_table[y]);
-            data.set(this.#cqt.output, 4 * y * this.#width);
+        for (let y = 0; y < p.bar_h + p.axis_h; y++) {
+            if (y <= p.bar_h)
+                p.cqt.render_line_alpha(y, p.alpha_table[y]);
+            data.set(p.cqt.output, 4 * y * p.width);
         }
 
-        if (this.#sono_h) {
-            const line_start = this.#bar_h + this.#axis_h;
-            const line_target = Math.min(this.#bar_h + this.#axis_h + this.#speed, this.#height - 1);
+        if (p.sono_h) {
+            const line_start = p.bar_h + p.axis_h;
+            const line_target = Math.min(p.bar_h + p.axis_h + p.speed, p.height - 1);
             if (line_target > line_start)
-                data.copyWithin(line_target * 4 * this.#width, line_start * 4 * this.#width);
-            data.set(this.#cqt.output, 4 * this.#width * line_start);
-            for (let y = 1; y < this.#speed && line_start + y < this.#height; y++) {
-                this.#ring_buffer_read(Math.round(this.#ring_read - y * delta / this.#speed) & this.#ring_mask);
-                this.#cqt.calc();
-                this.actual_render_callback?.(this.#cqt.color);
-                this.#cqt.render_line_opaque(this.#bar_h);
-                data.set(this.#cqt.output, 4 * this.#width * (line_start + y));
+                data.copyWithin(line_target * 4 * p.width, line_start * 4 * p.width);
+            data.set(p.cqt.output, 4 * p.width * line_start);
+            for (let y = 1; y < p.speed && line_start + y < p.height; y++) {
+                this.#ring_buffer_read(Math.round(p.ring_read - y * delta / p.speed) & p.ring_mask);
+                p.cqt.calc();
+                this.actual_render_callback?.(p.cqt.color);
+                p.cqt.render_line_opaque(p.bar_h);
+                data.set(p.cqt.output, 4 * p.width * (line_start + y));
             }
         }
 
-        this.#sono_dirty_h = is_silent ? this.#sono_dirty_h - this.#speed : this.#sono_h + 2 * this.#speed;
-        this.#canvas_is_dirty = true;
+        p.sono_dirty_h = is_silent ? p.sono_dirty_h - p.speed : p.sono_h + 2 * p.speed;
+        p.canvas_is_dirty = true;
     };
 
-    // ring buffer
-    #ring_buffer;
-    #ring_size;
-    #ring_write;
-    #ring_read;
-    #ring_mask;
-
     #ring_buffer_write = (data) => {
-        const len = data[0].length, size = this.#ring_size;
-        const w = this.#ring_write, mask = this.#ring_mask, buf = this.#ring_buffer;
+        const p = this.#private;
+        const len = data[0].length, size = p.ring_size;
+        const w = p.ring_write, mask = p.ring_mask, buf = p.ring_buffer;
 
         if (w + len <= size) {
             buf[0].set(data[0], w);
@@ -479,13 +436,14 @@ class ShowCQTElement extends HTMLElement {
             }
         }
 
-        this.#ring_write = (w + len) & mask;
+        p.ring_write = (w + len) & mask;
 
     };
 
     #ring_buffer_read = (idx) => {
-        const len = this.#cqt.fft_size, size = this.#ring_size;
-        const mask = this.#ring_mask, buf = this.#ring_buffer, dst = this.#cqt.inputs;
+        const p = this.#private;
+        const len = p.cqt.fft_size, size = p.ring_size;
+        const mask = p.ring_mask, buf = p.ring_buffer, dst = p.cqt.inputs;
 
         if (idx + len <= size) {
             dst[0].set(buf[0].subarray(idx, idx+len));
@@ -496,6 +454,58 @@ class ShowCQTElement extends HTMLElement {
                 dst[c].set(buf[c].subarray(0, idx + len - size), size - idx);
             }
         }
+    };
+
+    #private = {
+        showcqt_element_input_source: Symbol("showcqt_element_input_source"),
+
+        // layout
+        width: 0,
+        height: 0,
+        waterfall: 0,
+        axis_h: 0,
+        sono_h: 0,
+        bar_h: 0,
+        opacity: false,
+        speed: 0,
+        layout_changed: false,
+        brightness: 0,
+        bar: 0,
+        interval: 0,
+
+        // elements
+        container: null,
+        blocker: null,
+        canvas: null,
+        axis: null,
+        canvas_ctx: null,
+        canvas_buffer: null,
+
+        // input elements
+        i_elems: [],
+
+        // context
+        cqt: null,
+        audio_ctx: null,
+        iir: null,
+        panner: null,
+
+        // render state
+        alpha_table: null,
+        is_active_render: false,
+        render_count: 0,
+        canvas_is_dirty: false,
+        is_paused: false,
+        sono_dirty_h: 0,
+
+        last_time: NaN,
+
+        // ring buffer
+        ring_buffer: null,
+        ring_size: 0,
+        ring_write: 0,
+        ring_read: 0,
+        ring_mask: 0
     };
 }
 
