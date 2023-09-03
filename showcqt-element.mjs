@@ -29,6 +29,7 @@ const DEFAULT_BASS          = -30,  MIN_BASS        = -50,  MAX_BASS        = 0;
 const DEFAULT_INTERVAL      = 1,    MIN_INTERVAL    = 1,    MAX_INTERVAL    = 4;
 const DEFAULT_SPEED         = 2,    MIN_SPEED       = 1,    MAX_SPEED       = 12;
 const DEFAULT_OPACITY       = "opaque";
+const DEFAULT_SCALE         = 100,  MIN_SCALE       = 30,   MAX_SCALE       = 100;
 
 const OBSERVED_ATTRIBUTES = [
     "data-axis",
@@ -38,6 +39,7 @@ const OBSERVED_ATTRIBUTES = [
     "data-bass",
     "data-interval",
     "data-speed",
+    "data-scale",
     "data-opacity"
 ];
 
@@ -203,6 +205,11 @@ class ShowCQTElement extends HTMLElement {
                 this.#create_alpha_table();
                 this.#clear_bar();
                 break;
+            case "data-scale":
+                val = Math.max(MIN_SCALE, Math.min(MAX_SCALE, isNaN(val*1) ? DEFAULT_SCALE : val*1));
+                p.layout_changed = (p.scale !== val);
+                p.scale = val;
+                break;
             default:
                 throw new Error("unreached");
         }
@@ -265,8 +272,9 @@ class ShowCQTElement extends HTMLElement {
 
         this.render_callback?.();
 
-        const width = p.container.clientWidth;
-        const height = p.container.clientHeight;
+        const width = Math.round(p.container.clientWidth * p.scale / 100);
+        const height = Math.round(p.container.clientHeight * p.scale / 100);
+        const inv_scale = p.container.clientHeight / height;
 
         if (width <= 0 || height <= 0)
             return;
@@ -307,13 +315,15 @@ class ShowCQTElement extends HTMLElement {
                 p.sono_h = 0;
             }
 
-            p.axis.style.bottom = p.sono_h + "px";
-            p.axis.style.width = width + "px";
-            p.axis.style.height = p.axis_h + "px";
+            p.axis.style.bottom = p.sono_h * inv_scale + "px";
+            p.axis.style.width = p.container.clientWidth + "px";
+            p.axis.style.height = p.axis_h * inv_scale + "px";
             p.canvas.width = width;
             p.canvas.height = height;
-            p.blocker.style.width = width + "px";
-            p.blocker.style.height = p.sono_h + p.axis_h + Math.round(0.1 * p.bar_h) + "px";
+            p.canvas.style.width = p.container.clientWidth + "px";
+            p.canvas.style.height = p.container.clientHeight + "px";
+            p.blocker.style.width = p.container.clientWidth + "px";
+            p.blocker.style.height = (p.sono_h + p.axis_h + 0.1 * p.bar_h) * inv_scale + "px";
             p.canvas_buffer = p.canvas_ctx.createImageData(width, height);
             this.#create_alpha_table();
             this.#clear_canvas();
@@ -472,6 +482,7 @@ class ShowCQTElement extends HTMLElement {
         brightness: 0,
         bar: 0,
         interval: 0,
+        scale: 0,
 
         // elements
         container: null,

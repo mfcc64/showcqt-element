@@ -89,6 +89,10 @@ import "https://cdn.jsdelivr.net/npm/showcqt-element@1.1.2/showcqt-element.mjs";
 <!-- data-opacity: opacity of audio visualization bar, default: opaque, available: transparent
      example: make it transparent -->
 <showcqt-element data-opacity="transparent"></showcqt-element>
+
+<!-- data-scale: canvas scale in percents, default: 100, minimum: 30, maximum: 100
+     example: half scale, reducing CPU usage but make canvas blurry -->
+<showcqt-element data-scale="50"></showcqt-element>
 ```
 - Manual audio inputs
 ```html
