@@ -177,8 +177,9 @@ class ShowCQTElement extends HTMLElement {
                 this.#axis.src = val ? val : DEFAULT_AXIS_SRC;
                 break;
             case "data-waterfall":
-                this.#waterfall = Math.max(MIN_WATERFALL, Math.min(MAX_WATERFALL, isNaN(val*1) ? DEFAULT_WATERFALL : val*1));
-                this.#layout_changed = true;
+                val = Math.max(MIN_WATERFALL, Math.min(MAX_WATERFALL, isNaN(val*1) ? DEFAULT_WATERFALL : val*1));
+                this.#layout_changed = (this.#waterfall !== val);
+                this.#waterfall = val;
                 break;
             case "data-brightness":
                 this.#brightness = Math.max(MIN_BRIGHTNESS, Math.min(MAX_BRIGHTNESS, isNaN(val*1) ? DEFAULT_BRIGHTNESS : val*1));
