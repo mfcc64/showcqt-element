@@ -313,6 +313,7 @@ class ShowCQTElement extends HTMLElement {
             return;
 
         if (width !== this.#width || height !== this.#height || this.#layout_changed) {
+            let old_waterfall = null;
             if (width !== this.#width) {
                 this.#cqt.init(this.#audio_ctx.sampleRate, width, height, 4, 4, 4, true);
                 if (!this.#ring_buffer) {
@@ -325,6 +326,8 @@ class ShowCQTElement extends HTMLElement {
                     this.#ring_write = this.#cqt.fft_size;
                     this.#ring_mask = this.#ring_size - 1;
                 }
+            } else {
+                old_waterfall = this.#canvas_buffer.data.subarray(4 * this.#width * this.#bar_h);
             }
 
             this.#layout_changed = false;
@@ -355,6 +358,10 @@ class ShowCQTElement extends HTMLElement {
             this.#canvas_buffer = this.#canvas_ctx.createImageData(width, height);
             this.#create_alpha_table();
             this.#clear_canvas();
+            if (old_waterfall)
+                this.#canvas_buffer.data.set(old_waterfall.subarray(0,
+                                             Math.min(old_waterfall.length, 4 * this.#width * (this.#axis_h + this.#sono_h))),
+                                             4 * this.#width * this.#bar_h);
         }
 
         if (!this.#is_paused) {
