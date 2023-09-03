@@ -197,7 +197,10 @@ class ShowCQTElement extends HTMLElement {
                 this.#speed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, isNaN(val*1) ? DEFAULT_SPEED : Math.round(val*1)));
                 break;
             case "data-opacity":
-                this.#opacity = (val == "transparent" || val == "opaque") ? val : DEFAULT_OPACITY;
+                val = (val == "transparent" || val == "opaque") ? val : DEFAULT_OPACITY;
+                if (this.#opacity === val)
+                    break;
+                this.#opacity = val;
                 this.#canvas.style.pointerEvents = (this.#opacity == "opaque") ? "auto" : "none";
                 this.#create_alpha_table();
                 this.#clear_bar();
