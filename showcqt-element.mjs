@@ -21,27 +21,17 @@
 // FIXME
 import ShowCQT from "https://cdn.jsdelivr.net/npm/showcqt@1.2.0/showcqt.mjs";
 
-const DEFAULT_AXIS_SRC      = `${new URL("axis-1920x32.png", import.meta.url)}`;
-const DEFAULT_WATERFALL     = 33,   MIN_WATERFALL   = 0,    MAX_WATERFALL   = 100;
-const DEFAULT_BRIGHTNESS    = 17,   MIN_BRIGHTNESS  = 1,    MAX_BRIGHTNESS  = 100;
-const DEFAULT_BAR           = 17,   MIN_BAR         = 1,    MAX_BAR         = 100;
-const DEFAULT_BASS          = -30,  MIN_BASS        = -50,  MAX_BASS        = 0;
-const DEFAULT_INTERVAL      = 1,    MIN_INTERVAL    = 1,    MAX_INTERVAL    = 4;
-const DEFAULT_SPEED         = 2,    MIN_SPEED       = 1,    MAX_SPEED       = 12;
-const DEFAULT_OPACITY       = "opaque";
-const DEFAULT_SCALE         = 100,  MIN_SCALE       = 30,   MAX_SCALE       = 100;
-
-const OBSERVED_ATTRIBUTES = [
-    "data-axis",
-    "data-waterfall",
-    "data-brightness",
-    "data-bar",
-    "data-bass",
-    "data-interval",
-    "data-speed",
-    "data-scale",
-    "data-opacity"
-];
+const OBSERVED_ATTRIBUTES = {
+    "data-axis":        { def: String(new URL("axis-1920x32.png", import.meta.url)) },
+    "data-waterfall":   { def:  33, min:   0, max: 100 },
+    "data-brightness":  { def:  17, min:   1, max: 100 },
+    "data-bar":         { def:  17, min:   1, max: 100 },
+    "data-bass":        { def: -30, min: -50, max:   0 },
+    "data-interval":    { def:   1, min:   1, max:   4 },
+    "data-speed":       { def:   2, min:   1, max:  12 },
+    "data-scale":       { def: 100, min:  30, max: 100 },
+    "data-opacity":     { def: "opaque" }
+};
 
 // HTMLElement, customElements.get, customElements.define are hijacked by youtube custom-elements-es5-adapter.js
 // Hopefully nobody hijacks HTMLDivElement
@@ -52,7 +42,7 @@ class ShowCQTElement extends HTMLElement {
     static global_audio_context;
 
     static get observedAttributes() {
-        return [...OBSERVED_ATTRIBUTES, "data-inputs"];
+        return [... Object.keys(OBSERVED_ATTRIBUTES), "data-inputs"];
     }
 
     constructor() {
@@ -120,7 +110,7 @@ class ShowCQTElement extends HTMLElement {
             worklet.port.onmessage = (msg) => p.ring_buffer ? this.#ring_buffer_write(msg.data) : 0;
         })().catch(e => console.error(e));
 
-        for (const attr of OBSERVED_ATTRIBUTES)
+        for (const attr of Object.keys(OBSERVED_ATTRIBUTES))
             this.#update_attribute(attr);
     }
 
@@ -171,44 +161,33 @@ class ShowCQTElement extends HTMLElement {
 
     #update_attribute = (name, val) => {
         const p = this.#private;
+        const attr = OBSERVED_ATTRIBUTES;
         val = val ? val : undefined;
+        const prop = name.substring(5);
         switch (name) {
             case "data-axis":
-                p.axis.src = val ? val : DEFAULT_AXIS_SRC;
+                p.axis.src = val ? val : attr[name].def;
                 break;
             case "data-waterfall":
-                val = Math.max(MIN_WATERFALL, Math.min(MAX_WATERFALL, isNaN(val*1) ? DEFAULT_WATERFALL : val*1));
-                p.layout_changed = (p.waterfall !== val);
-                p.waterfall = val;
-                break;
             case "data-brightness":
-                p.brightness = Math.max(MIN_BRIGHTNESS, Math.min(MAX_BRIGHTNESS, isNaN(val*1) ? DEFAULT_BRIGHTNESS : val*1));
-                break;
             case "data-bar":
-                p.bar = Math.max(MIN_BAR, Math.min(MAX_BAR, isNaN(val*1) ? DEFAULT_BAR : val*1));
-                break;
             case "data-bass":
-                p.iir.gain.value = Math.max(MIN_BASS, Math.min(MAX_BASS, isNaN(val*1) ? DEFAULT_BASS : val*1));
-                break;
             case "data-interval":
-                p.interval = Math.max(MIN_INTERVAL, Math.min(MAX_INTERVAL, isNaN(val*1) ? DEFAULT_INTERVAL : Math.round(val*1)));
-                break;
             case "data-speed":
-                p.speed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, isNaN(val*1) ? DEFAULT_SPEED : Math.round(val*1)));
+            case "data-scale":
+                val = Math.max(attr[name].min, Math.min(attr[name].max, isNaN(val*1) ? attr[name].def : val*1));
+                if (prop == "interval" || prop == "speed") val = Math.round(val);
+                if (prop == "waterfall" || prop == "scale") p.layout_changed = (p[prop] !== val);
+                (prop == "bass") ? p.iir.gain.value = val : p[prop] = val;
                 break;
             case "data-opacity":
-                val = (val == "transparent" || val == "opaque") ? val : DEFAULT_OPACITY;
+                val = (val == "transparent" || val == "opaque") ? val : attr[name].def;
                 if (p.opacity === val)
                     break;
                 p.opacity = val;
                 p.canvas.style.pointerEvents = (p.opacity == "opaque") ? "auto" : "none";
                 this.#create_alpha_table();
                 this.#clear_bar();
-                break;
-            case "data-scale":
-                val = Math.max(MIN_SCALE, Math.min(MAX_SCALE, isNaN(val*1) ? DEFAULT_SCALE : val*1));
-                p.layout_changed = (p.scale !== val);
-                p.scale = val;
                 break;
             default:
                 throw new Error("unreached");
