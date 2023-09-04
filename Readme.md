@@ -16,8 +16,10 @@ import "showcqt-element";
 ```js
 // import the latest version
 import "https://cdn.jsdelivr.net/npm/showcqt-element/showcqt-element.mjs";
+// import the latest major version 1
+import "https://cdn.jsdelivr.net/npm/showcqt-element@1/showcqt-element.mjs";
 // import a specific version, the recommended way, improve cacheability
-import "https://cdn.jsdelivr.net/npm/showcqt-element@1.1.2/showcqt-element.mjs";
+import "https://cdn.jsdelivr.net/npm/showcqt-element@1.2.0/showcqt-element.mjs";
 ```
 - A simple example:
 ```html
@@ -25,8 +27,7 @@ import "https://cdn.jsdelivr.net/npm/showcqt-element@1.1.2/showcqt-element.mjs";
 <html>
     <head>
         <title>ShowCQTElement</title>
-        <!-- of course, the recommended way is to import a specific version -->
-        <script type="module" src="https://cdn.jsdelivr.net/npm/showcqt-element/showcqt-element.mjs"></script>
+        <script type="module" src="https://cdn.jsdelivr.net/npm/showcqt-element@1.2.0/showcqt-element.mjs"></script>
         <script type="module">
             document.getElementById("audio-input").onchange = function() {
                 const player = document.getElementById("audio-player");
