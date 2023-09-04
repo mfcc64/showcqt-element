@@ -90,9 +90,14 @@ import "https://cdn.jsdelivr.net/npm/showcqt-element@1.1.2/showcqt-element.mjs";
      example: make it transparent -->
 <showcqt-element data-opacity="transparent"></showcqt-element>
 
-<!-- data-scale: canvas scale in percents, default: 100, minimum: 30, maximum: 100
+<!-- data-scale-x: canvas horizontal scale in percents, default: 100, minimum: 30, maximum: 100
      example: half scale, reducing CPU usage but make canvas blurry -->
-<showcqt-element data-scale="50"></showcqt-element>
+<showcqt-element data-scale-x="50"></showcqt-element>
+
+<!-- data-scale-y: canvas vertical scale in percents, also affecting waterfall speed,
+     lower data-scale-y makes faster waterfall speed, default: 100, minimum: 30, maximum: 100
+     example: same speed as data-speed="2" but with lower CPU usage and lower image quality -->
+<showcqt-element data-scale-y="50" data-speed="1"></showcqt-element>
 ```
 - Manual audio inputs
 ```html

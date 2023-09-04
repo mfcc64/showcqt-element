@@ -29,7 +29,8 @@ const OBSERVED_ATTRIBUTES = {
     "data-bass":        { def: -30, min: -50, max:   0 },
     "data-interval":    { def:   1, min:   1, max:   4 },
     "data-speed":       { def:   2, min:   1, max:  12 },
-    "data-scale":       { def: 100, min:  30, max: 100 },
+    "data-scale-x":     { def: 100, min:  30, max: 100 },
+    "data-scale-y":     { def: 100, min:  30, max: 100 },
     "data-opacity":     { def: "opaque" }
 };
 
@@ -174,10 +175,11 @@ class ShowCQTElement extends HTMLElement {
             case "data-bass":
             case "data-interval":
             case "data-speed":
-            case "data-scale":
+            case "data-scale-x":
+            case "data-scale-y":
                 val = Math.max(attr[name].min, Math.min(attr[name].max, isNaN(val*1) ? attr[name].def : val*1));
                 if (prop == "interval" || prop == "speed") val = Math.round(val);
-                if (prop == "waterfall" || prop == "scale") p.layout_changed = (p[prop] !== val);
+                if (prop == "waterfall" || prop == "scale-x" || prop == "scale-y") p.layout_changed = (p[prop] !== val);
                 (prop == "bass") ? p.iir.gain.value = val : p[prop] = val;
                 break;
             case "data-opacity":
@@ -251,9 +253,9 @@ class ShowCQTElement extends HTMLElement {
 
         this.render_callback?.();
 
-        const width = Math.round(p.container.clientWidth * p.scale / 100);
-        const height = Math.round(p.container.clientHeight * p.scale / 100);
-        const inv_scale = p.container.clientHeight / height;
+        const width = Math.round(p.container.clientWidth * p["scale-x"] / 100);
+        const height = Math.round(p.container.clientHeight * p["scale-y"] / 100);
+        const scale_y = height / p.container.clientHeight;
 
         if (width <= 0 || height <= 0)
             return;
@@ -272,8 +274,8 @@ class ShowCQTElement extends HTMLElement {
                     p.ring_write = p.cqt.fft_size;
                     p.ring_mask = p.ring_size - 1;
                 }
-            } else {
-                old_waterfall = p.canvas_buffer.data.subarray(4 * p.width * p.bar_h);
+            } else if (p.sono_h) {
+                old_waterfall = p.canvas_buffer.data.subarray(4 * p.width * (p.bar_h + p.axis_h));
             }
 
             p.layout_changed = false;
@@ -281,7 +283,7 @@ class ShowCQTElement extends HTMLElement {
             p.height = height;
 
             p.sono_h = Math.round(p.waterfall * height / 100);
-            p.axis_h = Math.round(width * 32 / 1920);
+            p.axis_h = Math.round(p.container.clientWidth * 32 / 1920 * scale_y);
             p.bar_h = height - p.axis_h - p.sono_h;
 
             if (p.bar_h < 1) {
@@ -294,22 +296,22 @@ class ShowCQTElement extends HTMLElement {
                 p.sono_h = 0;
             }
 
-            p.axis.style.bottom = p.sono_h * inv_scale + "px";
+            p.axis.style.bottom = p.sono_h / scale_y + "px";
             p.axis.style.width = p.container.clientWidth + "px";
-            p.axis.style.height = p.axis_h * inv_scale + "px";
+            p.axis.style.height = p.axis_h / scale_y + "px";
             p.canvas.width = width;
             p.canvas.height = height;
             p.canvas.style.width = p.container.clientWidth + "px";
             p.canvas.style.height = p.container.clientHeight + "px";
             p.blocker.style.width = p.container.clientWidth + "px";
-            p.blocker.style.height = (p.sono_h + p.axis_h + 0.1 * p.bar_h) * inv_scale + "px";
+            p.blocker.style.height = (p.sono_h + p.axis_h + 0.1 * p.bar_h) / scale_y + "px";
             p.canvas_buffer = p.canvas_ctx.createImageData(width, height);
             this.#create_alpha_table();
             this.#clear_canvas();
-            if (old_waterfall)
+            if (old_waterfall && p.sono_h)
                 p.canvas_buffer.data.set(old_waterfall.subarray(0,
-                                         Math.min(old_waterfall.length, 4 * p.width * (p.axis_h + p.sono_h))),
-                                         4 * p.width * p.bar_h);
+                                         Math.min(old_waterfall.length, 4 * p.width * p.sono_h)),
+                                         4 * p.width * (p.bar_h + p.axis_h));
         }
 
         if (!p.is_paused) {
@@ -461,7 +463,8 @@ class ShowCQTElement extends HTMLElement {
         brightness: 0,
         bar: 0,
         interval: 0,
-        scale: 0,
+        "scale-x": 0,
+        "scale-y": 0,
 
         // elements
         container: null,
