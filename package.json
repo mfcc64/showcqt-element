@@ -2,7 +2,7 @@
   "name": "showcqt-element",
   "version": "2.0.0-alpha",
   "description": "showcqt audio visualization custom element",
-  "main": "showcqt-element.mjs",
+  "main": "showcqt-element-node.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,9 +14,6 @@
   "license": "LGPL-3.0-or-later",
   "dependencies": {
     "showcqt": "2.0.1"
-  },
-  "scripts": {
-    "postinstall": "node fix-import.js"
   },
   "bugs": {
     "url": "https://github.com/mfcc64/showcqt-element/issues"
