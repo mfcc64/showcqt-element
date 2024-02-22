@@ -13,7 +13,7 @@
   "author": "Muhammad Faiz",
   "license": "LGPL-3.0-or-later",
   "dependencies": {
-    "showcqt": "1.2.1"
+    "showcqt": "2.0.1"
   },
   "scripts": {
     "postinstall": "node fix-import.js"

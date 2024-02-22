@@ -19,7 +19,7 @@
 // https://github.com/mfcc64/showcqt-element
 
 // FIXME
-import ShowCQT from "../showcqt@1.2.1/showcqt.mjs";
+import ShowCQT from "../showcqt@2.0.1/showcqt.mjs";
 
 const OBSERVED_ATTRIBUTES = {
     "data-axis":        { def: String(new URL("axis-1920x32.png", import.meta.url)) },
