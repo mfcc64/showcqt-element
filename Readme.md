@@ -10,16 +10,21 @@ A [showcqt](https://github.com/mfcc64/showcqt-js) audio visualization as an HTML
 npm i showcqt-element
 ```
 ```js
-import "showcqt-element";
+import {ShowCQTElement} from "showcqt-element";
+
+// import AutoResumeAudioContext
+import {AutoResumeAudioContext} from "showcqt-element";
 ```
 - CDN
 ```js
-// import the latest version
-import "https://cdn.jsdelivr.net/npm/showcqt-element/showcqt-element.mjs";
-// import the latest major version 1
-import "https://cdn.jsdelivr.net/npm/showcqt-element@1/showcqt-element.mjs";
-// import a specific version, the recommended way, improve cacheability
-import "https://cdn.jsdelivr.net/npm/showcqt-element@1.3.1/showcqt-element.mjs";
+// import a specific version
+import {ShowCQTElement} from "https://cdn.jsdelivr.net/npm/showcqt-element@2.0.0/showcqt-element.mjs";
+
+// import a specific major version
+import {ShowCQTElement} from "https://cdn.jsdelivr.net/npm/showcqt-element@2/showcqt-element.mjs";
+
+// also on unpkg
+import {ShowCQTElement} from "https://unpkg.com/showcqt-element@2/showcqt-element.mjs";
 ```
 - A simple example:
 ```html
@@ -27,7 +32,7 @@ import "https://cdn.jsdelivr.net/npm/showcqt-element@1.3.1/showcqt-element.mjs";
 <html>
     <head>
         <title>ShowCQTElement</title>
-        <script type="module" src="https://cdn.jsdelivr.net/npm/showcqt-element@1.3.1/showcqt-element.mjs"></script>
+        <script type="module" src="https://cdn.jsdelivr.net/npm/showcqt-element@2/showcqt-element.mjs"></script>
         <script type="module">
             document.getElementById("audio-input").onchange = function() {
                 const player = document.getElementById("audio-player");
@@ -43,11 +48,27 @@ import "https://cdn.jsdelivr.net/npm/showcqt-element@1.3.1/showcqt-element.mjs";
         <showcqt-element id="showcqt" data-inputs="#audio-player"></showcqt-element>
     </body>
 </html>
+```
+- Constructor
+```js
+// use document.createElement
+const showcqt = document.createElement("showcqt-element");
 
+// use constructor
+const showcqt = new ShowCQTElement();
+
+// global_audio_context
+ShowCQTElement.global_audio_context = new AutoResumeAudioContext();
+// now showcqt will use global_audio_context instead of internal audio_context
+const showcqt = new ShowCQTElement();
+
+// use audio_context from constructor, it will override global_audio_context
+// AutoResumeAudioContext accepts parameters of AudioContext constructor
+const showcqt = new ShowCQTElement(new AutoResumeAudioContext({sampleRate: 48000}));
 ```
 - We can set style:
 ```css
-#showcqt {
+showcqt-element {
     position: fixed;
     left: 0; bottom: 0;
     width: 100%; height: 50%;
@@ -144,9 +165,4 @@ showcqt.render_is_paused;
 showcqt.render_clear();
 // get the array of input elements from data-inputs attribute
 showcqt.input_elements;
-
-// global_audio_context
-customElements.get("showcqt-element").global_audio_context = new AudioContext();
-// now showcqt will use global_audio_context instead of internal audio_context
-const showcqt = document.createElement("showcqt-element");
 ```
