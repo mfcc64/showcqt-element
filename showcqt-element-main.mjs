@@ -56,7 +56,7 @@ class ShowCQTElement extends HTMLElement {
         return [... Object.keys(OBSERVED_ATTRIBUTES), "data-inputs"];
     }
 
-    constructor() {
+    constructor(custom_ctx) {
         super();
         const p = Object.seal(this.#private);
         const shadow = this.attachShadow({mode: "open"});
@@ -95,7 +95,7 @@ class ShowCQTElement extends HTMLElement {
             p[id] = shadow.getElementById(id);
         p.canvas_ctx = p.canvas.getContext("2d");
 
-        p.audio_ctx = ShowCQTElement.global_audio_context || new AutoResumeAudioContext();
+        p.audio_ctx = custom_ctx || ShowCQTElement.global_audio_context || new AutoResumeAudioContext();
 
         p.panner = p.audio_ctx.createStereoPanner();
         (async () => {
