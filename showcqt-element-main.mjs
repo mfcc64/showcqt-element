@@ -21,6 +21,16 @@
 import {extern} from "./extern.mjs";
 const {ShowCQT} = extern;
 
+class AutoResumeAudioContext extends AudioContext {
+    constructor(...args) {
+        super(...args);
+        (async () => {
+            while (this.state == "suspended")
+                this.resume(), await new Promise(r => setTimeout(r, 100));
+        })();
+    }
+}
+
 const OBSERVED_ATTRIBUTES = {
     "data-axis":        { def: String(new URL("axis-1920x32.png", import.meta.url)) },
     "data-waterfall":   { def:  33, min:   0, max: 100 },
@@ -85,18 +95,7 @@ class ShowCQTElement extends HTMLElement {
             p[id] = shadow.getElementById(id);
         p.canvas_ctx = p.canvas.getContext("2d");
 
-        p.audio_ctx = ShowCQTElement.global_audio_context;
-        if (!p.audio_ctx) {
-            p.audio_ctx = new AudioContext();
-            // FIXME
-            var resume_audio = () => {
-                if (p.audio_ctx.state === "suspended") {
-                    p.audio_ctx.resume();
-                    setTimeout(resume_audio, 100);
-                }
-            }
-            resume_audio();
-        }
+        p.audio_ctx = ShowCQTElement.global_audio_context || new AutoResumeAudioContext();
 
         p.panner = p.audio_ctx.createStereoPanner();
         (async () => {
@@ -520,4 +519,4 @@ for (let m = 0; m < 100; m++) {
 if (!is_defined)
     throw new Error("Unable to register showcqt-element");
 
-export {ShowCQTElement};
+export {ShowCQTElement, AutoResumeAudioContext};
