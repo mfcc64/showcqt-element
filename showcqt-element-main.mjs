@@ -504,7 +504,20 @@ class ShowCQTElement extends HTMLElement {
     };
 }
 
-if (CustomElementRegistry.prototype.get.call(customElements, "showcqt-element"))
-    console.warn("multiple definition of showcqt-element");
-else
-    CustomElementRegistry.prototype.define.call(customElements, "showcqt-element", ShowCQTElement);
+let is_defined = false;
+for (let m = 0; m < 100; m++) {
+    let name = `showcqt-element${ m ? "--" + m : "" }`;
+
+    if (!CustomElementRegistry.prototype.get.call(customElements, name)) {
+        CustomElementRegistry.prototype.define.call(customElements, name, ShowCQTElement);
+        is_defined = true;
+        break;
+    }
+
+    m || console.warn("multiple definition of showcqt-element");
+}
+
+if (!is_defined)
+    throw new Error("Unable to register showcqt-element");
+
+export {ShowCQTElement};
