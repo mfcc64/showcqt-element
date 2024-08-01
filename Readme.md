@@ -18,7 +18,7 @@ import {AutoResumeAudioContext} from "showcqt-element";
 - CDN
 ```js
 // import a specific version
-import {ShowCQTElement} from "https://cdn.jsdelivr.net/npm/showcqt-element@2.0.1/showcqt-element.mjs";
+import {ShowCQTElement} from "https://cdn.jsdelivr.net/npm/showcqt-element@2.0.2/showcqt-element.mjs";
 
 // import a specific major version
 import {ShowCQTElement} from "https://cdn.jsdelivr.net/npm/showcqt-element@2/showcqt-element.mjs";
