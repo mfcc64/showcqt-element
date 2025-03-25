@@ -155,6 +155,21 @@ showcqt.actual_render_callback = function(color_buf) {
         // do something
     }
 };
+
+// send_buffer is called when there are samples from audio graph
+// by default, send_buffer is equal to write_buffer
+showcqt.send_buffer == showcqt.write_buffer; // true
+
+showcqt.send_buffer = function(data) {
+    // modify buffer
+    // data[0]: left channel, data[1]: right channel
+    for (let x = 0; x < data[0].length; x++) {
+        data[0][x] += 0.1 * Math.random() - 0.05;
+        data[1][x] += 0.1 * Math.random() - 0.05;
+    }
+    this.write_buffer(data);
+};
+
 ```
 - Render controls and others
 ```js
