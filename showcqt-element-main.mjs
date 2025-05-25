@@ -314,8 +314,16 @@ class ShowCQTElement extends HTMLElement {
             p.last_time = time;
         }
 
-        if (p.canvas_is_dirty)
+        if (p.canvas_is_dirty) {
             p.canvas_ctx.putImageData(p.canvas_buffer, 0, 0);
+            this.post_render_callback?.({
+                canvas: p.canvas,
+                canvas_ctx: p.canvas_ctx,
+                bar_h: p.bar_h,
+                axis_h: p.axis_h,
+                sono_h: p.sono_h
+            });
+        }
 
         p.canvas_is_dirty = false;
     };
