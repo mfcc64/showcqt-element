@@ -145,6 +145,7 @@ showcqt.render_callback = function() {
 };
 
 // actual_render_callback is called when there is an actual render
+// when called, it will be called 'data-speed' times, the first one corresponds to bargraph rendering
 // actual render is skipped when:
 //  - display is none (hidden visibility does not count)
 //  - silence is detected
