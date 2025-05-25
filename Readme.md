@@ -156,6 +156,12 @@ showcqt.actual_render_callback = function(color_buf) {
     }
 };
 
+// post_render_callback is called after after buffer copied to canvas
+// either because of actual render or canvas clearing
+showcqt.post_render_callback = function({canvas, canvas_ctx, bar_h, axis_h, sono_h}) {
+    console.log(canvas.height == bar_h + axis_h + sono_h); // should be true
+};
+
 // send_buffer is called when there are samples from audio graph
 // by default, send_buffer is equal to write_buffer
 showcqt.send_buffer == showcqt.write_buffer; // true
