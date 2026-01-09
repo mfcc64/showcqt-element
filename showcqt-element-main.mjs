@@ -123,7 +123,7 @@ class ShowCQTElement extends HTMLElement {
         val = val ? val : "";
         const new_elems = [];
         try {
-            for (const elem of document.querySelectorAll(val)) {
+            for (const elem of val ? document.querySelectorAll(val) : []) {
                 try {
                     const k = p.i_elems.indexOf(elem);
                     if (k >= 0) {
@@ -133,20 +133,22 @@ class ShowCQTElement extends HTMLElement {
                     }
 
                     if (elem[src]) {
-                        if (elem[src].context == p.audio_ctx) {
-                            elem[src].connect(this.audio_input);
-                            elem[src].connect(p.audio_ctx.destination);
-                            new_elems.push(elem);
-                        }
+                        elem[src].connect(this.audio_input);
+                        elem[src].connect(p.audio_ctx.destination);
+                        new_elems.push(elem);
                     } else {
                         elem[src] = p.audio_ctx.createMediaElementSource(elem);
                         elem[src].connect(this.audio_input);
                         elem[src].connect(p.audio_ctx.destination);
                         new_elems.push(elem);
                     }
-                } catch { }
+                } catch (e) {
+                    console.error(e);
+                }
             }
-        } catch { }
+        } catch (e) {
+            console.error(e);
+        }
 
         for (const elem of p.i_elems)
             if (elem)
