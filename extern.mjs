@@ -1,3 +1,3 @@
 
-export var extern;
-export function set_extern(v){ extern = v; }
+export const extern = { };
+export const set_extern = v => Object.freeze(Object.assign(extern, v));
