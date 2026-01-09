@@ -120,6 +120,7 @@ class ShowCQTElement extends HTMLElement {
     #update_input_elements = (val) => {
         const p = this.#private;
         const src = Symbol.for("showcqt-element/media-element-source");
+        const count = Symbol.for("showcqt-element/media-element-source-count");
         val = val ? val : "";
         const new_elems = [];
         try {
@@ -135,11 +136,13 @@ class ShowCQTElement extends HTMLElement {
                     if (elem[src]) {
                         elem[src].connect(this.audio_input);
                         elem[src].connect(p.audio_ctx.destination);
+                        elem[count]++;
                         new_elems.push(elem);
                     } else {
                         elem[src] = p.audio_ctx.createMediaElementSource(elem);
                         elem[src].connect(this.audio_input);
                         elem[src].connect(p.audio_ctx.destination);
+                        elem[count] = (elem[count] ?? 0) + 1;
                         new_elems.push(elem);
                     }
                 } catch (e) {
@@ -151,8 +154,12 @@ class ShowCQTElement extends HTMLElement {
         }
 
         for (const elem of p.i_elems)
-            if (elem)
-                elem[src].disconnect();
+            if (elem) {
+                elem[src].disconnect(this.audio_input);
+                elem[count]--;
+                if (elem[count] <= 0)
+                    elem[src].disconnect(p.audio_ctx.destination);
+            }
 
         p.i_elems = new_elems;
     };
