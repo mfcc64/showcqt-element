@@ -119,7 +119,7 @@ class ShowCQTElement extends HTMLElement {
 
     #update_input_elements = (val) => {
         const p = this.#private;
-        const src = p.showcqt_element_input_source;
+        const src = Symbol.for("showcqt-element/media-element-source");
         val = val ? val : "";
         const new_elems = [];
         try {
@@ -471,8 +471,6 @@ class ShowCQTElement extends HTMLElement {
     };
 
     #private = {
-        showcqt_element_input_source: Symbol("showcqt_element_input_source"),
-
         // layout
         width: 0,
         height: 0,
