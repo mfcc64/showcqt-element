@@ -120,6 +120,12 @@ showcqt-element {
      lower data-scale-y makes faster waterfall speed, default: 100, minimum: 30, maximum: 100
      example: same speed as data-speed="2" but with lower CPU usage and lower image quality -->
 <showcqt-element data-scale-y="50" data-speed="1"></showcqt-element>
+
+<!-- data-shared: automatically create shared AudioContext by setting ShowCQTElement.global_audio_context,
+     it allows multiple instance of showcqt-element to connect to same media inputs -->
+<audio src="audio.mp3" controls></audio>
+<showcqt-element data-inputs="audio" data-shared></showcqt-element>
+<showcqt-element data-inputs="audio" data-shared></showcqt-element>
 ```
 - Manual audio inputs
 ```html
