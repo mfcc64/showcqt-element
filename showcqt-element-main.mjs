@@ -131,6 +131,9 @@ class ShowCQTElement extends HTMLElement {
 
     #update_input_elements = (val) => {
         const p = this.#private;
+        if (!p.is_connected)
+            return;
+
         const src = Symbol.for("showcqt-element/media-element-source");
         const count = Symbol.for("showcqt-element/media-element-source-count");
         val = val ? val : "";
@@ -214,12 +217,16 @@ class ShowCQTElement extends HTMLElement {
 
     connectedCallback() {
         const p = this.#private;
+        p.is_connected = true;
+        this.#update_input_elements(this.getAttribute("data-inputs"));
         if (p.render_id === undefined)
             p.render_id = requestAnimationFrame(this.#render);
     }
 
     disconnectedCallback() {
         const p = this.#private;
+        this.#update_input_elements("");
+        p.is_connected = false;
         if (p.render_id !== undefined)
             p.render_id = cancelAnimationFrame(p.render_id);
     }
@@ -529,6 +536,7 @@ class ShowCQTElement extends HTMLElement {
         canvas_is_dirty: false,
         is_paused: false,
         sono_dirty_h: 0,
+        is_connected: false,
 
         last_time: NaN,
 
