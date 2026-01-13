@@ -104,14 +104,23 @@ class ShowCQTElement extends HTMLElement {
         p.panner = p.audio_ctx.createStereoPanner();
         (async () => {
             await p.audio_ctx.audioWorklet.addModule(new URL("audio-worklet.mjs", import.meta.url));
-            const worklet = new AudioWorkletNode(p.audio_ctx, "showcqt-element--send-frame", { outputChannelCount: [2] });
+            const worklet = new AudioWorkletNode(p.audio_ctx, "showcqt-element--send-frame-v2", { outputChannelCount: [2] });
             p.panner.connect(worklet);
-            worklet.port.onmessage = (msg) => this.send_buffer(msg.data);
+            worklet.port.onmessage = ShowCQTElement.#gen_port_onmessage(new WeakRef(this));
+            ShowCQTElement.#finalizer.register(this, {worklet, input: p.panner});
         })().catch(e => console.error(e));
 
         for (const attr of Object.keys(OBSERVED_ATTRIBUTES))
             this.#update_attribute(attr);
     }
+
+    static #finalizer = new FinalizationRegistry(({worklet, input}) => {
+        const src = Symbol.for("showcqt-element/media-element-source");
+        worklet.port.postMessage("close");
+        worklet.port.close();
+        input.disconnect();
+    });
+    static #gen_port_onmessage = wr => (msg => wr.deref()?.send_buffer(msg.data));
 
     attributeChangedCallback(name, old_val, val) {
         if (name == "data-inputs")
