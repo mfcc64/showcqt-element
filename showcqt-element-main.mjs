@@ -115,7 +115,6 @@ class ShowCQTElement extends HTMLElement {
     }
 
     static #finalizer = new FinalizationRegistry(({worklet, input}) => {
-        const src = Symbol.for("showcqt-element/media-element-source");
         worklet.port.postMessage("close");
         worklet.port.close();
         input.disconnect();
@@ -131,15 +130,26 @@ class ShowCQTElement extends HTMLElement {
 
     #update_input_elements = (val) => {
         const p = this.#private;
-        if (!p.is_connected)
+        if (!p.qs_root)
             return;
 
         const src = Symbol.for("showcqt-element/media-element-source");
         const count = Symbol.for("showcqt-element/media-element-source-count");
         val = val ? val : "";
         const new_elems = [];
+
+        if (p.observer) {
+            const level = (val.indexOf("#") >= 0 || val.indexOf(".") >= 0 || val.indexOf("[") >= 0) ? 2 : 1 * !!val;
+            if (level != p.observe_level) {
+                p.observer.disconnect();
+                p.observe_level = level;
+                if (level > 0)
+                    p.observer.observe(p.qs_root, {subtree: true, childList: true, attributes: level == 2});
+            }
+        }
+
         try {
-            for (const elem of val ? document.querySelectorAll(val) : []) {
+            for (const elem of val ? p.qs_root.querySelectorAll(val) : []) {
                 try {
                     const k = p.i_elems.indexOf(elem);
                     if (k >= 0) {
@@ -217,16 +227,40 @@ class ShowCQTElement extends HTMLElement {
 
     connectedCallback() {
         const p = this.#private;
-        p.is_connected = true;
+        let need_observer = false;
+        p.qs_root = this;
+        if (this.hasAttribute("data-scoped-level")) {
+            let level = Math.round(this.getAttribute("data-scoped-level"));
+            if (level != level) level = 0;
+            (level >= 0) ? (need_observer = true) : (level = -level);
+
+            for (let m = 0; m < level; m++) {
+                const next = p.qs_root.parentNode ?? p.qs_root.host;
+                if (!next)
+                    break;
+                p.qs_root = next;
+            }
+        }
+
+        if (p.qs_root == this) p.qs_root = document;
+
+        if (need_observer)
+            p.observer = new MutationObserver(this.#observe);
+
         this.#update_input_elements(this.getAttribute("data-inputs"));
         if (p.render_id === undefined)
             p.render_id = requestAnimationFrame(this.#render);
     }
 
+    #observe = (r) => {
+        this.#update_input_elements(this.getAttribute("data-inputs"));
+    };
+
     disconnectedCallback() {
         const p = this.#private;
         this.#update_input_elements("");
-        p.is_connected = false;
+        p.observer = null;
+        p.qs_root = null;
         if (p.render_id !== undefined)
             p.render_id = cancelAnimationFrame(p.render_id);
     }
@@ -528,6 +562,9 @@ class ShowCQTElement extends HTMLElement {
         cqt: null,
         audio_ctx: null,
         panner: null,
+        qs_root: null,
+        observer: null,
+        observe_level: 0,
 
         // render state
         alpha_table: null,
@@ -536,7 +573,6 @@ class ShowCQTElement extends HTMLElement {
         canvas_is_dirty: false,
         is_paused: false,
         sono_dirty_h: 0,
-        is_connected: false,
 
         last_time: NaN,
 
