@@ -96,10 +96,8 @@ class ShowCQTElement extends HTMLElement {
 
         p.canvas_ctx = p.canvas.getContext("2d");
 
-        if (this.hasAttribute("data-shared") && !ShowCQTElement.global_audio_context)
-            ShowCQTElement.global_audio_context = new AutoResumeAudioContext();
-
-        p.audio_ctx = custom_ctx || ShowCQTElement.global_audio_context || new AutoResumeAudioContext();
+        p.audio_ctx = custom_ctx || ShowCQTElement.global_audio_context ||
+            (ShowCQTElement.global_audio_context = new AutoResumeAudioContext());
 
         p.panner = p.audio_ctx.createStereoPanner();
         (async () => {
