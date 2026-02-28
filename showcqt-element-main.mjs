@@ -156,18 +156,12 @@ class ShowCQTElement extends HTMLElement {
                         continue;
                     }
 
-                    if (elem[src]) {
-                        elem[src].connect(this.audio_input);
+                    elem[src] = elem[src] ?? p.audio_ctx.createMediaElementSource(elem);
+                    elem[src].connect(this.audio_input);
+                    if (!elem[count])
                         elem[src].connect(p.audio_ctx.destination);
-                        elem[count]++;
-                        new_elems.push(elem);
-                    } else {
-                        elem[src] = p.audio_ctx.createMediaElementSource(elem);
-                        elem[src].connect(this.audio_input);
-                        elem[src].connect(p.audio_ctx.destination);
-                        elem[count] = (elem[count] ?? 0) + 1;
-                        new_elems.push(elem);
-                    }
+                    elem[count] = (elem[count] ?? 0) + 1;
+                    new_elems.push(elem);
                 } catch (e) {
                     console.error(e);
                 }
@@ -178,13 +172,14 @@ class ShowCQTElement extends HTMLElement {
 
         for (const elem of p.i_elems)
             if (elem) {
-                elem[src].disconnect(this.audio_input);
+                try { elem[src].disconnect(this.audio_input); } catch (e) { console.error(e); }
                 elem[count]--;
                 if (elem[count] <= 0)
-                    elem[src].disconnect(p.audio_ctx.destination);
+                    try { elem[src].disconnect(p.audio_ctx.destination); } catch (e) { console.error(e); }
             }
 
-        p.i_elems = new_elems;
+        p.i_elems.length = 0;
+        p.i_elems.push(...new_elems);
     };
 
     #update_attribute = (name, val) => {
