@@ -18,13 +18,13 @@ import {AutoResumeAudioContext} from "showcqt-element";
 - CDN
 ```js
 // import a specific version
-import {ShowCQTElement} from "https://cdn.jsdelivr.net/npm/showcqt-element@2.3.0/showcqt-element.mjs";
+import {ShowCQTElement} from "https://cdn.jsdelivr.net/npm/showcqt-element@3.0.0/showcqt-element.mjs";
 
 // import a specific major version
-import {ShowCQTElement} from "https://cdn.jsdelivr.net/npm/showcqt-element@2/showcqt-element.mjs";
+import {ShowCQTElement} from "https://cdn.jsdelivr.net/npm/showcqt-element@3/showcqt-element.mjs";
 
 // also on unpkg
-import {ShowCQTElement} from "https://unpkg.com/showcqt-element@2/showcqt-element.mjs";
+import {ShowCQTElement} from "https://unpkg.com/showcqt-element@3/showcqt-element.mjs";
 ```
 - A simple example:
 ```html
