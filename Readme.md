@@ -58,8 +58,9 @@ const showcqt = document.createElement("showcqt-element");
 const showcqt = new ShowCQTElement();
 
 // global_audio_context
-ShowCQTElement.global_audio_context = new AutoResumeAudioContext();
-// now showcqt will use global_audio_context instead of internal audio_context
+if (!ShowCQTElement.global_audio_context)
+    ShowCQTElement.global_audio_context = new AutoResumeAudioContext({sampleRate: 44100});
+
 const showcqt = new ShowCQTElement();
 
 // use audio_context from constructor, it will override global_audio_context
